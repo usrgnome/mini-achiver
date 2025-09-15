@@ -1,0 +1,68 @@
+# ---- Build trees (CMake / Make / Ninja) ----
+/build/
+/build-*/
+/cmake-build-*/
+CMakeFiles/
+/CMakeCache.txt
+CMakeScripts/
+Makefile
+cmake_install.cmake
+CTestTestfile.cmake
+Testing/
+_install/
+install/
+compile_commands.json
+
+# ---- Binaries / libraries ----
+*.o
+*.obj
+*.lo
+*.la
+*.a
+*.lib
+*.dll
+*.so
+*.so.*
+*.dylib
+*.exe
+*.out
+*.app
+*.pdb
+
+# ---- Project outputs (archives & payloads) ----
+*.mfa
+payload.bin
+*.bin
+
+# ---- Coverage / profiling ----
+*.gcno
+*.gcda
+*.gcov
+*.profraw
+*.profdata
+
+# ---- Logs & temp files ----
+*.log
+*.tmp
+*.swp
+*.swo
+
+# ---- Editor / IDE ----
+.vscode/
+.idea/
+*.iml
+.ccls-cache/
+.clangd/
+.cache/
+
+# ---- OS cruft ----
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Icon?
+.Spotlight-V100
+.Trashes
+
+# ---- Xcode (if someone uses it) ----
+*.xcuserdatad
+DerivedData/
