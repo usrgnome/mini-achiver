@@ -3,6 +3,8 @@
 
 #include "mfa_types.h"
 
-void free_enc_file(enc_file_t *file);
+int enc_file(enc_file_t *file, char *pass);
+
+int enc_files(enc_file_t files[], size_t file_count, char *pass);
 
 #endif /* ENCRYPT_H */

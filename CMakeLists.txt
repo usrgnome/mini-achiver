@@ -10,6 +10,7 @@ add_executable(mfa_read
     src/main.c
     src/mfa_util.c
     src/mfa_encrypt.c
+    src/mfa_compress.c
 )
 
 target_include_directories(mfa_read PRIVATE ${CMAKE_SOURCE_DIR}/include)
