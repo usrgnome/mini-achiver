@@ -3,14 +3,13 @@
 
 #include "mfa_types.h"
 #include <stdlib.h>  /* for size_t */
+#include <stdio.h>
 
 void free_files(enc_file_t *files, size_t n);
 
 unsigned char *load_file(const char *path, size_t *out_len);
 
 int load_all(enc_file_t *files, size_t n);
-
-int build_archive(const char *path, enc_file_t files[], size_t file_count);
 
 int validate_pass(const char *pass);
 

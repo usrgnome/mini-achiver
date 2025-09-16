@@ -1,7 +1,7 @@
 #include "mfa_util.h"
 #include "mfa_types.h"
-#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 void free_files(enc_file_t *files, size_t n) {
     if (!files) return;
@@ -50,14 +50,22 @@ int load_all(enc_file_t *files, size_t n) {
             return -1;
         }
         files[i].data = buf;
+
+        //make a copy of buf into files[i].edata
+        files[i].edata = (unsigned char *)malloc(len);
+        if (!files[i].edata) {
+            fprintf(stderr, "Failed to allocate memory for encrypted data\n");
+            return -1;
+        }
+
+        for (size_t j = 0; j < len; ++j) files[i].edata[j] = buf[j];
+
+        files[i].elen = len;
         files[i].len = len;
     }
     return 0;
 }
 
-int build_archive(const char *path, enc_file_t files[], size_t file_count) {
-    return 0;
-}
 
 int validate_pass(const char *pass) {
     int pass_len = strlen(pass);

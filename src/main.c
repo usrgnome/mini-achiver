@@ -1,6 +1,8 @@
 #include "mfa_util.h"
+#include "mfa_write.h"
 #include "mfa_encrypt.h"
 #include "mfa_compress.h"
+#include "mfa_read.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -94,5 +96,14 @@ int main(int argc, char **argv)
 cleanup:
     free_files(files, (size_t)total);
     free(files);
+
+
+    /* testing try to extract archive */
+    printf("Testing extraction of archive: %s\n", out_path);
+    if (mfa_extract_all(out_path, "") != 0) {
+        fprintf(stderr, "Failed to extract archive: %s\n", out_path);
+        return 1;
+    }
+
     return rc;
 }
