@@ -1,75 +1,82 @@
 #include "mfa_util.h"
-#include "mfa_types.h"
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
-void free_files(enc_file_t *files, size_t n) {
-    if (!files) return;
-    for (size_t i = 0; i < n; ++i) {
-        free(files[i].data);      /* free(NULL) is safe */
-        files[i].data = NULL;
-        files[i].len = 0;
-        /* files[i].path is not owned; do not free */
-    }
+/* ---- I/O helpers ---- */
+int mfa_read_exact(FILE *fp, void *buf, size_t n) {
+    return fread(buf, 1, n, fp) == n ? 0 : -1;
+}
+int mfa_write_exact(FILE *fp, const void *buf, size_t n) {
+    return fwrite(buf, 1, n, fp) == n ? 0 : -1;
 }
 
-/* Load entire file into memory (binary).
-   Returns malloc'ed buffer and sets *out_len.
-   On error, returns NULL and *out_len is left unchanged. */
-unsigned char *load_file(const char *path, size_t *out_len) {
-    if (!path || !out_len) return NULL;
-
-    FILE *f = fopen(path, "rb");
-    if (!f) { perror(path); return NULL; }
-
-    if (fseek(f, 0, SEEK_END) != 0) { perror("fseek"); fclose(f); return NULL; }
-    long sz = ftell(f);
-    if (sz < 0) { perror("ftell"); fclose(f); return NULL; }
-    rewind(f);
-
-    unsigned char *buf = (unsigned char *)malloc((size_t)sz);
-    if (!buf) { perror("malloc"); fclose(f); return NULL; }
-
-    size_t n = fread(buf, 1, (size_t)sz, f);
-    if (n != (size_t)sz) { perror("fread"); free(buf); fclose(f); return NULL; }
-
-    if (fclose(f) != 0) { perror("fclose"); free(buf); return NULL; }
-
-    *out_len = n;
-    return buf;
+/* ---- LE writers ---- */
+int mfa_w16(FILE *fp, uint16_t v) {
+    uint8_t b[2] = { v & 0xFF, (uint8_t)(v >> 8) };
+    return mfa_write_exact(fp, b, 2);
+}
+int mfa_w32(FILE *fp, uint32_t v) {
+    uint8_t b[4] = { v, v>>8, v>>16, v>>24 };
+    return mfa_write_exact(fp, b, 4);
+}
+int mfa_w64(FILE *fp, uint64_t v) {
+    uint8_t b[8] = {
+        v, v>>8, v>>16, v>>24,
+        v>>32, v>>40, v>>48, v>>56
+    };
+    return mfa_write_exact(fp, b, 8);
 }
 
-int load_all(enc_file_t *files, size_t n) {
-    for (size_t i = 0; i < n; ++i) {
-        files[i].data = NULL;
-        files[i].len = 0;
-        size_t len = 0;
-        unsigned char *buf = load_file(files[i].path, &len);
-        if (!buf) {
-            fprintf(stderr, "Failed to load: %s\n", files[i].path);
-            return -1;
-        }
-        files[i].data = buf;
-
-        //make a copy of buf into files[i].edata
-        files[i].edata = (unsigned char *)malloc(len);
-        if (!files[i].edata) {
-            fprintf(stderr, "Failed to allocate memory for encrypted data\n");
-            return -1;
-        }
-
-        for (size_t j = 0; j < len; ++j) files[i].edata[j] = buf[j];
-
-        files[i].elen = len;
-        files[i].len = len;
-    }
+/* ---- LE readers ---- */
+int mfa_r16(FILE *fp, uint16_t *out) {
+    uint8_t b[2]; if (mfa_read_exact(fp,b,2)) return -1;
+    *out = (uint16_t)(b[0] | (b[1] << 8)); return 0;
+}
+int mfa_r32(FILE *fp, uint32_t *out) {
+    uint8_t b[4]; if (mfa_read_exact(fp,b,4)) return -1;
+    *out = (uint32_t)b[0] | ((uint32_t)b[1]<<8)
+         | ((uint32_t)b[2]<<16) | ((uint32_t)b[3]<<24);
+    return 0;
+}
+int mfa_r64(FILE *fp, uint64_t *out) {
+    uint8_t b[8]; if (mfa_read_exact(fp,b,8)) return -1;
+    *out = (uint64_t)b[0] | ((uint64_t)b[1]<<8) | ((uint64_t)b[2]<<16)
+         | ((uint64_t)b[3]<<24) | ((uint64_t)b[4]<<32) | ((uint64_t)b[5]<<40)
+         | ((uint64_t)b[6]<<48) | ((uint64_t)b[7]<<56);
     return 0;
 }
 
+/* ---- Alignment ---- */
+long long mfa_pad_to(FILE *fp, unsigned long long off, unsigned align) {
+    unsigned pad = (unsigned)((align - (off % align)) % align);
+    static const uint8_t zeros[16] = {0};
+    while (pad) {
+        unsigned chunk = pad > sizeof zeros ? (unsigned)sizeof zeros : pad;
+        if (fwrite(zeros,1,chunk,fp) != chunk) return -1;
+        off += chunk; pad -= chunk;
+    }
+    return (long long)off;
+}
 
-int validate_pass(const char *pass) {
-    int pass_len = strlen(pass);
-    if (!pass || pass_len == 0) return 0;
-    // Example validation: at least 1 characters
-    return pass_len >= 1;
+/* ---- Path helpers ---- */
+const char *mfa_basename(const char *p) {
+    const char *last = p;
+    for (const char *s=p; *s; ++s) if (*s=='/'||*s=='\\') last = s+1;
+    return last;
+}
+void mfa_sanitize(char *s) {
+    for (; *s; ++s) if (*s=='/'||*s=='\\'||*s==':') *s='_';
+}
+char *mfa_join_path(const char *dir, const char *name) {
+    if (!dir || !*dir) return strdup(name);
+    size_t a=strlen(dir), b=strlen(name);
+    int need_sep = (a>0 && dir[a-1]!='/');
+    char *p = malloc(a+need_sep+b+1);
+    if (!p) return NULL;
+    memcpy(p, dir, a);
+    if (need_sep) p[a++]='/';
+    memcpy(p+a, name, b);
+    p[a+b]='\0';
+    return p;
 }

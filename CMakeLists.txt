@@ -9,10 +9,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_executable(mfa_read
     src/main.c
     src/mfa_util.c
-    src/mfa_encrypt.c
-    src/mfa_compress.c
-    src/mfa_write.c
-    src/mfa_read.c
+    src/mfa.c
 )
 
 target_include_directories(mfa_read PRIVATE ${CMAKE_SOURCE_DIR}/include)
