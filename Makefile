@@ -11,7 +11,7 @@ CPPFLAGS := -Iinclude
 TARGET  := build/main.out
 
 # Source files
-SRCS    := src/main.c src/mfa_util.c src/mfa.c
+SRCS    := src/main.c src/mfa_util.c src/mfa.c src/linked_list.c
 
 # Object files (mirrors SRCS but inside build/)
 OBJS    := $(SRCS:src/%.c=build/%.o)

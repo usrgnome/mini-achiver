@@ -1,3 +1,4 @@
+#include "linked_list.h"
 #include "mfa_util.h"
 #include <stdlib.h>
 #include <string.h>
@@ -80,4 +81,25 @@ char *mfa_join_path(const char *dir, const char *name) {
     memcpy(p+a, name, b);
     p[a+b]='\0';
     return p;
+}
+
+/* Sort a list of paths in-place. */
+int mfa_sort_paths(linked_list *paths) {
+    if (!paths || ll_size(paths) < 2) return 1;
+    int swapped;
+    do {
+        swapped = 0;
+        linked_list_node *current = paths->head;
+        while (current && current->next) {
+            char *s1 = (char *)current->data;
+            char *s2 = (char *)current->next->data;
+            if (strcmp(s1, s2) > 0) {
+                current->data = s2;
+                current->next->data = s1;
+                swapped = 1;
+            }
+            current = current->next;
+        }
+    } while (swapped);
+    return 0;
 }

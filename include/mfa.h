@@ -1,6 +1,7 @@
 #ifndef MFA_H
 #define MFA_H
 
+#include "linked_list.h"
 #include <stddef.h>   /* size_t */
 #include <stdint.h>   /* uint8_t */
 
@@ -24,15 +25,15 @@ enum {
 /* ---------------- Public API ---------------- */
 
 /* Load file contents into memory for each entry (fills buf/len). */
-int  mfa_load_all(mfa_file files[], size_t n);
+int  mfa_load_all(linked_list *files);
 
 /* Free file buffers for each entry (frees buf, zeroes len). */
-void mfa_free_all(mfa_file files[], size_t n);
+void mfa_free_all(linked_list *files);
 
 /* Create an archive from files[]. If flags contain MFA_ENCRYPT, `pass` is used.
    Returns 0 on success. */
 int mfa_pack(const char *archive_path,
-             mfa_file files[], size_t file_count,
+             linked_list *files,
              const char *pass, unsigned flags);
 
 /* Print a table of contents for the archive to stdout. */

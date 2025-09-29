@@ -1,6 +1,8 @@
 #ifndef MFA_UTIL_H
 #define MFA_UTIL_H
 
+#include "linked_list.h"
+
 #include <stdio.h>
 #include <stdint.h>
 #include <stddef.h>
@@ -49,5 +51,8 @@ void mfa_sanitize(char *s);
 /* Join directory + name into a newly malloc'd string.
    Caller must free. If dir is NULL/empty, just dup name. */
 char *mfa_join_path(const char *dir, const char *name);
+
+/* Sort a list of paths in-place. */
+int mfa_sort_paths(linked_list *paths);
 
 #endif /* MFA_UTIL_H */

@@ -1,3 +1,4 @@
+#include "linked_list.h"
 #include "mfa.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,34 +18,37 @@ int main(int argc, char **argv) {
     size_t i;
 
     /* Build file table */
-    mfa_file *files = (mfa_file *)calloc(file_count, sizeof *files);
+    linked_list *files = ll_create();
+
     if (!files) { perror("calloc"); return 1; }
     for (i = 0; i < file_count; ++i) {
-        files[i].path = argv[3 + i];
-        files[i].buf  = NULL;
-        files[i].len  = 0;
+        mfa_file *f = (mfa_file *)malloc(sizeof(mfa_file));
+        f->path = argv[3 + i];
+        f->buf  = NULL;
+        f->len  = 0;
+        ll_append(files, f);
     }
 
     /* Load files into memory */
-    if (mfa_load_all(files, file_count) != 0) {
+    if (mfa_load_all(files) != 0) {
         fprintf(stderr, "Failed to load input files.\n");
-        free(files);
+        ll_free(files);
         return 1;
     }
 
     /* Pack archive with both compression+encryption flags (compression is no-op for now) */
-    if (mfa_pack(archive_path, files, file_count, pass, MFA_COMPRESS | MFA_ENCRYPT) != 0) {
+    if (mfa_pack(archive_path, files, pass, MFA_COMPRESS | MFA_ENCRYPT) != 0) {
         fprintf(stderr, "Failed to create archive.\n");
-        mfa_free_all(files, file_count);
-        free(files);
+        mfa_free_all(files);
+        ll_free(files);
         return 1;
     }
 
     printf("Archive created: %s\n", archive_path);
 
     /* Clean up file buffers */
-    mfa_free_all(files, file_count);
-    free(files);
+    mfa_free_all(files);
+    ll_free(files);
 
     /* List archive contents */
     printf("\nListing archive:\n");
