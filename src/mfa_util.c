@@ -85,21 +85,31 @@ char *mfa_join_path(const char *dir, const char *name) {
 
 /* Sort a list of paths in-place. */
 int mfa_sort_paths(linked_list *paths) {
-    if (!paths || ll_size(paths) < 2) return 1;
+    linked_list_node *cur;
     int swapped;
+
+    if (!paths || ll_size(paths) < 2) return 0; /* nothing to do */
+
     do {
         swapped = 0;
-        linked_list_node *current = paths->head;
-        while (current && current->next) {
-            char *s1 = (char *)current->data;
-            char *s2 = (char *)current->next->data;
-            if (strcmp(s1, s2) > 0) {
-                current->data = s2;
-                current->next->data = s1;
+        cur = paths->head;
+
+        while (cur && cur->next) {
+            mfa_file *fa = (mfa_file *)cur->data;
+            mfa_file *fb = (mfa_file *)cur->next->data;
+
+            const char *sa = (fa && fa->path) ? fa->path : "";
+            const char *sb = (fb && fb->path) ? fb->path : "";
+
+            if (strcmp(sa, sb) > 0) {
+                void *tmp = cur->data;                 /* swap entire payloads */
+                cur->data = cur->next->data;
+                cur->next->data = tmp;
                 swapped = 1;
             }
-            current = current->next;
+            cur = cur->next;
         }
     } while (swapped);
+
     return 0;
 }

@@ -2,6 +2,7 @@
 #define MFA_H
 
 #include "linked_list.h"
+#include "mfa_util.h"
 #include <stddef.h>   /* size_t */
 #include <stdint.h>   /* uint8_t */
 
@@ -9,12 +10,6 @@
 extern "C" {
 #endif
 
-/* ---------------- File handle ---------------- */
-typedef struct {
-    const char *path;  /* input path (not owned) */
-    uint8_t    *buf;   /* loaded bytes (owned) */
-    size_t      len;   /* size of buf */
-} mfa_file;
 
 /* ---------------- Transform flags ---------------- */
 enum {

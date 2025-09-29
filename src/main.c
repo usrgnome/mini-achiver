@@ -29,6 +29,13 @@ int main(int argc, char **argv) {
         ll_append(files, f);
     }
 
+    /* Sort paths alphabetically by file name for consistent order */
+    if(mfa_sort_paths(files) != 0) {
+        fprintf(stderr, "Failed to sort input files.\n");
+        ll_free(files);
+        return 1;
+    }
+
     /* Load files into memory */
     if (mfa_load_all(files) != 0) {
         fprintf(stderr, "Failed to load input files.\n");

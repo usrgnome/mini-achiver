@@ -7,6 +7,13 @@
 #include <stdint.h>
 #include <stddef.h>
 
+/* ---------------- File handle ---------------- */
+typedef struct {
+    const char *path;  /* input path (not owned) */
+    uint8_t    *buf;   /* loaded bytes (owned) */
+    size_t      len;   /* size of buf */
+} mfa_file;
+
 /* ============================================================
    Utility helpers for MFA archive format
    ------------------------------------------------------------
