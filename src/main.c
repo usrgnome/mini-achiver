@@ -14,11 +14,12 @@ int main(int argc, char **argv) {
     const char *archive_path = argv[1];
     const char *pass         = argv[2];
     size_t file_count        = (size_t)(argc - 3);
+    size_t i;
 
     /* Build file table */
     mfa_file *files = (mfa_file *)calloc(file_count, sizeof *files);
     if (!files) { perror("calloc"); return 1; }
-    for (size_t i = 0; i < file_count; ++i) {
+    for (i = 0; i < file_count; ++i) {
         files[i].path = argv[3 + i];
         files[i].buf  = NULL;
         files[i].len  = 0;

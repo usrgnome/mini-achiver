@@ -62,7 +62,8 @@ long long mfa_pad_to(FILE *fp, unsigned long long off, unsigned align) {
 /* ---- Path helpers ---- */
 const char *mfa_basename(const char *p) {
     const char *last = p;
-    for (const char *s=p; *s; ++s) if (*s=='/'||*s=='\\') last = s+1;
+    const char *s = p;
+    for (; *s; ++s) if (*s=='/'||*s=='\\') last = s+1;
     return last;
 }
 void mfa_sanitize(char *s) {

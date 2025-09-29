@@ -1,6 +1,0 @@
-# from the project root (mini-archiver/)
-cmake -S . -B build
-cmake --build build --config Release
-
-# Run:
-./build/mfa "my passphrase" out.mfa file1.txt file2.bin

@@ -1,8 +1,8 @@
 #ifndef MFA_H
 #define MFA_H
 
-#include <stddef.h>   // size_t
-#include <stdint.h>   // uint8_t
+#include <stddef.h>   /* size_t */
+#include <stdint.h>   /* uint8_t */
 
 #ifdef __cplusplus
 extern "C" {
