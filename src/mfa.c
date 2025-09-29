@@ -12,28 +12,7 @@
 
 /* Simple RLE compression: [count, value] pairs */
 static int tf_compress(uint8_t **pbuf, size_t *plen) {
-    if (!pbuf || !*pbuf || !plen) return -1;
-
-    uint8_t *in = *pbuf;
-    size_t n    = *plen;
-
-    uint8_t *out = (uint8_t *)malloc(n * 2);
-    if (!out) { perror("malloc"); return -1; }
-
-    size_t j = 0;
-    size_t i;                                     /* declare outside loop */
-    for (i = 0; i < n;) {
-        uint8_t val   = in[i];
-        size_t runlen = 1;
-        while (i + runlen < n && in[i + runlen] == val && runlen < 255) runlen++;
-        out[j++] = (uint8_t)runlen;
-        out[j++] = val;
-        i += runlen;
-    }
-
-    free(in);
-    *pbuf = out;
-    *plen = j;
+    void)pbuf; (void)plen;
     return 0;
 }
 
@@ -41,41 +20,18 @@ static int tf_compress(uint8_t **pbuf, size_t *plen) {
 static int tf_decompress_rle(const uint8_t *in, size_t in_len,
                              uint8_t **out_buf, size_t *out_len,
                              uint64_t expected_out_len) {
-    if (!out_buf || !out_len) return -1;
-    size_t cap = expected_out_len ? (size_t)expected_out_len : (in_len ? in_len * 255 : 1);
-    uint8_t *out = (uint8_t *)malloc(cap);
-    if (!out) { perror("malloc"); return -1; }
-
-    size_t j = 0;
-    size_t i;                                     /* declare outside loop */
-    for (i = 0; i + 1 < in_len; i += 2) {
-        uint8_t cnt = in[i];
-        uint8_t val = in[i + 1];
-        if (expected_out_len && j + cnt > expected_out_len) { free(out); return -1; }
-        /* If not given an expected size, ensure capacity (rare for RLE) */
-        if (!expected_out_len && j + cnt > cap) {
-            size_t new_cap = cap * 2;
-            if (new_cap < j + cnt) new_cap = j + cnt;
-            uint8_t *tmp = (uint8_t *)realloc(out, new_cap);
-            if (!tmp) { free(out); perror("realloc"); return -1; }
-            out = tmp; cap = new_cap;
-        }
-        memset(out + j, val, cnt);
-        j += cnt;
-    }
-
-    if (expected_out_len && j != expected_out_len) {
-        free(out);
-        return -1;
-    }
-
-    *out_buf = out;
-    *out_len = j;
+    void)in_len; (void)expected_out_len;
     return 0;
 }
 
 /* Encryption: disabled (no-op) */
 static int tf_xor_encrypt(uint8_t **pbuf, size_t *plen, const char *pass) {
+    (void)pbuf; (void)plen; (void)pass;
+    return 0;
+}
+
+/* Deccryption: disabled (no-op) */
+static int tf_xor_decrypt(uint8_t **pbuf, size_t *plen, const char *pass) {
     (void)pbuf; (void)plen; (void)pass;
     return 0;
 }
