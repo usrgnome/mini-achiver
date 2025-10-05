@@ -1,44 +1,38 @@
 # Compiler
 CC      := gcc
 
-# Flags (warnings + strict ANSI mode unless you switch to -std=c11)
+# Keep the assignment's standard
 CFLAGS  := -Wall -Werror -ansi
-
-# Include path
-CPPFLAGS := -Iinclude
 
 # Target executable
 TARGET  := build/main.out
 
-# Source files
-SRCS    := src/main.c src/mfa_util.c src/mfa.c src/linked_list.c
+# Sources (flat layout: next to Makefile)
+SRCS    := main.c mfa_util.c mfa.c linked_list.c
 
-# Object files (mirrors SRCS but inside build/)
-OBJS    := $(SRCS:src/%.c=build/%.o)
+# Objects go in build/
+OBJS    := $(SRCS:%.c=build/%.o)
 
-# Libraries to link
+# Libraries
 LDLIBS  := -lm
 
-# Default rule
+# Default
 all: $(TARGET)
 
-# Link step
-$(TARGET): $(OBJS)
+# Link: ensure build/ exists and link objects
+$(TARGET): $(OBJS) | build
 	$(CC) $(CFLAGS) $(CPPFLAGS) -o $@ $(OBJS) $(LDLIBS)
 
-# Compile step: place .o files inside build/
-build/%.o: src/%.c | build
+# Compile: from current dir to build/
+build/%.o: %.c | build
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
-# Ensure build/ directory exists
+# Ensure build/ exists
 build:
-	mkdir -p build
+	mkdir -p $@
 
-# Cleaning
 .PHONY: clean run
 clean:
 	$(RM) -r build
-
-# Run helper
 run: $(TARGET)
 	./$(TARGET)

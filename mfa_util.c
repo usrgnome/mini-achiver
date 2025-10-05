@@ -4,6 +4,12 @@
 #include <string.h>
 #include <errno.h>
 
+char *mfa_strdup(const char *s) {
+    char *copy = malloc(strlen(s) + 1);
+    if (copy) strcpy(copy, s);
+    return copy;
+}
+
 /* ---- I/O helpers ---- */
 int mfa_read_exact(FILE *fp, void *buf, size_t n) {
     return fread(buf, 1, n, fp) == n ? 0 : -1;
@@ -71,7 +77,7 @@ void mfa_sanitize(char *s) {
     for (; *s; ++s) if (*s=='/'||*s=='\\'||*s==':') *s='_';
 }
 char *mfa_join_path(const char *dir, const char *name) {
-    if (!dir || !*dir) return strdup(name);
+    if (!dir || !*dir) return mfa_strdup(name);
     size_t a=strlen(dir), b=strlen(name);
     int need_sep = (a>0 && dir[a-1]!='/');
     char *p = malloc(a+need_sep+b+1);
